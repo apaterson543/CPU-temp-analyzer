@@ -1,110 +1,125 @@
 import sys
 import re
-from matrixoperations import MatrixOperations
+
 from linearapproximation import LinearApproximation
+from piecewiseinterpolation import PiecewiseInterpolation
 
-# Test matricies for initial qauss jordan elimination
-data = [[0, 0],
-        [1, 1],
-        [2, 4]]
+class ProcessTemps:
 
-X = [[3, 3, 4, 0],
-     [3, 5, 9, 0],
-     [5, 9, 17, 0],
-     [0, 0, 0, 4]]
+    def parse_temps(self, line, time):
+        """
+        Parse temperatures from file using regex to eliminate non-float values
 
-Y = [[5],
-     [9],
-     [17],
-     [4]]
+        :param line: line in input file
+        :param time: add time (increments of 30) to a new column in front of core0
+                     readings
 
+        :yields: list of temps as floats for line
+        """
+        temps_at_time = [time]
+        for element in line.split():
+            # Remove any char that is not a number or a '.'
+            element = re.sub(r'[^\d.]+', '', element)
+            temps_at_time.append(element)
 
-class ProcessedOutput:
-    def __init__(self, core_number, xk, xk_plus_one, yi, c0, c1, proc_type):
-        self.core_number = core_number
-        self.xk = xk
-        self.xk_plus_one = xk_plus_one
-        self.yi = yi
-        self.c0 = c0
-        self.c1 = c1
-        self.proc_type = proc_type
+        return temps_at_time
 
-    # def __repr__(self):
-    #     return "Time:% s core 0:% s core 1:% s core 2:% s core 3:% s" % (self.time_in_seconds,
-    #                                                                      self.core0,
-    #                                                                      self.core1,
-    #                                                                      self.core2,
-    #                                                                      self.core3)
+    def read_temps(self, file):
+        """
+        Reads temperatures line by line from input file
 
+        :param file: input filepath
 
-def parse_temps(line, time):
-    temps_at_time = [time]
-    for element in line.split():
-        element = re.sub(r'[^\d.]+', '', element)
-        temps_at_time.append(element)
+        :yields: list of all temperatures with time in rows with elements in
+                 the order:
+                    temp core0 core1 core2 ... coreN
+        """
+        formatted_temps = []
+        with open(file, 'r') as f:
+            time = 0
+            for line in f:
+                temps_time = self.parse_temps(line, time)
+                temps_time = [float(i) for i in temps_time]
+                formatted_temps.append(temps_time)
+                time += 30
 
-    return temps_at_time
+        return formatted_temps
 
+    def process_data(self, file, ctype):
+        """
+        Driver:
+            Collect information from input file. Input file filepath should be the first
+            command line argument followed by the The type of calculation you wish to perform:
 
-def read_temps(file):
-    formatted_temps = []
-    with open(file, 'r') as f:
-        time = 0
-        for line in f:
-            temps_time = parse_temps(line, time)
-            temps_time = [float(i) for i in temps_time]
-            formatted_temps.append(temps_time)
-            time += 30
+                1: Linear approximations based on adjacent pairs
+                2: Global Linear Approximation
+                3: Piecewise Interpolation
+                4: Cubic Spline
 
-    return formatted_temps
+            This function sends the data from the input file to be proccessed ito a usable form
+            then sends it off to its respective processing sector of this program.
 
+            :param file: The input file that consists of cpu temperatures
+            :param ctype: the command line argument for the calculation type to be performed
 
-def process_single_core(core_readings):
-    time = []
-    x = []
-    y = []
-    xt = []
-    xtx = []
-    xty = []
-    for temp in core_readings:
-        x.append([1, temp])
-
-    return x
+            Files are saved to SemesterProject/outputfiles/ on creation
 
 
-def process_data(file, ctype):
-    mat_ops = MatrixOperations()
-    chart_of_temps = read_temps(file)
-    linear_approx = LinearApproximation()
+        """
 
-    linear_approx.approximate(chart_of_temps)
-    # core_temps = []
-    # for row in range(len(chart_of_temps)):
-    #     core_temps.append(chart_of_temps[row][1])
-    # x = process_single_core(core_temps)
-    #
-    # # Test output
-    # # for line in x:
-    # #     print(line)
-    #
-    # xt = mat_ops.transpose(X)
-    # xtx = mat_ops.multiply(xt, X)
-    # xty = mat_ops.multiply(xt, Y)
-    # # augmented_matrix = mat_ops.augment(xtx, xty)
-    # # augmented_matrix = mat_ops.augment(X,Y)
-    #
-    # # for line in augmented_matrix:
-    # #     print(line)
-    #
-    # # cs = mat_ops.reduce_matrix(augmented_matrix)
-    # # for line in cs:
-    # #     print(line)
+        chart_of_temps = self.read_temps(file)
+
+        if ctype is '1':
+            print("Calculating piecewise linear approximations...")
+            linear_approx = LinearApproximation()
+            linear_approx.approximate(chart_of_temps, 1)
+            print("Done.")
+
+        elif ctype is '2':
+            print("Calculating global linear approximation...")
+            linear_approx = LinearApproximation()
+            linear_approx.approximate(chart_of_temps, 2)
+            print("Done.")
+
+        elif ctype is '3':
+            print("Calculating piecewise interpolations...")
+            piecewise_interpolation = PiecewiseInterpolation()
+            piecewise_interpolation.interpolate(chart_of_temps)
+            print("Done.")
+
+        elif ctype is '4':
+            print("Calculating cubic splines...")
+            #
+            print("Done.")
+
+        elif ctype is '5':
+            print("All calculations processing...")
+            linear_approx = LinearApproximation()
+            piecewise_interpolation = PiecewiseInterpolation()
+            print("Calculating piecewise linear approximations...")
+            linear_approx.approximate(chart_of_temps, 1)
+            print("Calculating global linear approximation...")
+            linear_approx.approximate(chart_of_temps, 2)
+            print("Calculating piecewise interpolations...")
+            piecewise_interpolation.interpolate(chart_of_temps)
+            print("Done.")
+
+        else:
+            print("ERROR: Please retry execution with valid arguments:")
+            print("       'python3 processtemps.py testfilepath #' ")
+            print("        where '#' is one of the following: ")
+            print("         1 -> Adjacent Pair Linear Approximations")
+            print("         2 -> Global Linear Approximation")
+            print("         3 -> Piecewise Interpolation")
+            print("         4 -> Cubic Spline")
+            print("         5 -> Perform All Of The Above")
 
 
 if __name__ == "__main__":
     # Input file with temperature data
     input_file = sys.argv[1]
+    process_temps = ProcessTemps()
     # Type of processing -- 1 for piecewise linear interpolation
     #                    -- 2 for global linear least squares approximation
     calculation_type = sys.argv[2]
-    process_data(input_file, calculation_type)
+    process_temps.process_data(input_file, calculation_type)

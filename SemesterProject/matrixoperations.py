@@ -2,12 +2,17 @@ class MatrixOperations:
     def __init__(self):
         self.mat = []
 
+    def check_compatibility(self, a, b):
+        # Check to see if matricies are compatible for these functions
+        return self
+
     def transpose(self, x):
         xt = [[row[i] for row in x] for i in range(len(x[0]))]
         return xt
 
     def multiply(self, a, b):
         c = []
+        # self.check_compatibility(a ,b)
         for i in range(0, len(a)):
             new = []
             for j in range(0, len(b[0])):
@@ -21,6 +26,9 @@ class MatrixOperations:
         return c
 
     def augment(self, x, y):
+
+        # self.check_compatibility(a ,b)
+
         xtx_xty = x
         for i in range(len(xtx_xty)):
             xtx_xty[i].append(y[i][0])
@@ -28,6 +36,9 @@ class MatrixOperations:
         return xtx_xty
 
     def reduce_matrix(self, m):
+
+        # self.check_compatibility(a ,b)
+
         for i in range(len(m)):
             if m[i][i] is 0:
                 c = 1
