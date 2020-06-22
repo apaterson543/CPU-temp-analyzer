@@ -41,10 +41,8 @@ class CubicSpline:
                 # If it as at the end of the list, xs or ys will return a flag
                 if (x_vals is -1) or (f_vals is -1):
                     break
-                # retrieve constant values for line equation
                 vect_vals = self.get_right_col_vals(x_vals, f_vals)
                 reduced = self.create_matrix_and_solve(vect_vals)
-
                 cs = self.get_cs_from_ms(reduced, f_vals, x_vals)
                 # Print equations to core specific file
                 out.splines_to_file(x_vals[0], x_vals[2], time_index, cs, 'Cubic Spline', cs_file_for_core)
@@ -88,8 +86,15 @@ class CubicSpline:
             return -1
 
     def get_right_col_vals(self, xs, fs):
-        vect = []
+        """
+        This gathers the values to place in the right column of the augmented matrix
 
+        :param xs: 3 x values that represent the bounds that are being measured
+        :param fs: the values of f[xi,xi+1]
+
+        :yields: yields list that represents a vector for augmentation
+        """
+        vect = []
         delta_x2, delta_x3 = self.get_differences(xs)
         f1, f2 = self.get_f_for_set(fs, delta_x2, delta_x3)
         vect.append([3 * f1])
@@ -98,17 +103,39 @@ class CubicSpline:
         return vect
 
     def get_differences(self, xs):
+        """
+        Calculates delta or difference values between x1,x2 and x2,x3
+
+        :param xs: holds 3 x values that represent bounds
+
+        :yields: difference between x1 and x2 as wel as x2 and x3
+        """
         delta_x2 = xs[1] - xs[0]
         delta_x3 = xs[2] - xs[1]
 
         return delta_x2, delta_x3
 
     def get_f_for_set(self, fs, delta_x2, delta_x3):
+        """
+        Gets f[x1,x2] and f[x2,x3]
+
+        :param fs: f(x) values which are temps for the 'processtemps.py'
+        :param delta_x2: difference in x1 and x2
+        :param delta_x3: difference in x2 and x3
+
+        :yields: f[x1,x2] and f[x2,x3]
+        """
         f1 = (fs[1] - fs[0]) / delta_x2
         f2 = (fs[1] - fs[2]) / delta_x3
         return f1, f2
 
     def create_matrix_and_solve(self, vect_vals):
+        """
+        Augment m matrix using previously created vector
+        :param vect_vals: vector of height 3
+
+        :yields: reduced identity matrix
+        """
         matops = MatrixOperations()
         m_vals = [[2, 1, 0],
                   [1, 4, 1],
@@ -118,6 +145,15 @@ class CubicSpline:
         return reduced
 
     def get_cs_from_ms(self, matrix, f_vals, x_vals):
+        """
+        Returns 'c' values for cubic equation
+
+        :param matrix: previously reduced augmented identity matrix
+        :param f_vals: f(x) values associated with x values
+        :param x_vals: x or time values (3) for bounds
+
+        :yeilds: c which is a list of values
+        """
         c_vals = []
 
         m1 = matrix[0][3]
@@ -127,12 +163,12 @@ class CubicSpline:
         f1, f2 = self.get_f_for_set(f_vals, delta_x2, delta_x3)
         delta_xi = delta_x2+delta_x3
         c10 = f_vals[0]
-        c1r = m1
+        c11 = m1
         c13 = (m2+m1-(2*f1))/(delta_xi * delta_xi)
         c12 = ((f1 - m1)/delta_xi) - (c13*delta_xi)
 
         c_vals.append(c10)
-        c_vals.append(c1r)
+        c_vals.append(c11)
         c_vals.append(c12)
         c_vals.append(c13)
 
