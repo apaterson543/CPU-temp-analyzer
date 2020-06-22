@@ -27,6 +27,12 @@ Generate linear approximation, piecewise interpolation, and cubic spline for eac
 87.0 86.0 74.0 85.0
 85.0 86.0 66.0 84.0
 ```
+> Included Sample Files
+```
+sampledata.txt  <-- with labels
+testdata.txt	<-- without lables
+
+```
 
 # Execution
 
