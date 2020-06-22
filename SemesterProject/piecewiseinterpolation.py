@@ -18,14 +18,14 @@ class PiecewiseInterpolation:
         # Core number that is being worked on. Starts at 1 because col0 is time.
         core_index = 1
         # Create directory for outputs if it does not already exist.
-        out.create_directory("interpolationfiles/")
+        out.create_directory("la_and_pi_files/")
         # Loop through all cores(columns) in input file
         for number_of_cores in range(1, len(input_data[0])):
             # Counter for index of time that holds core data. Resets upon new core.
             time_index = 0
             # Open output file for current core in created directory.
             pi_file_for_core = open(
-                "./outputfiles/interpolationfiles/core" + str(core_index - 1) + "_interpolations.txt'", "w+")
+                "./outputfiles/la_and_pi_files/core" + str(core_index - 1) + ".txt", "a")
 
             # Loop through all rows in input data and process interpolation for
             #   each increment

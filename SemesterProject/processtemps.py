@@ -3,7 +3,7 @@ import re
 
 from linearapproximation import LinearApproximation
 from piecewiseinterpolation import PiecewiseInterpolation
-
+from cubicspline import CubicSpline
 class ProcessTemps:
 
     def parse_temps(self, line, time):
@@ -51,10 +51,9 @@ class ProcessTemps:
             Collect information from input file. Input file filepath should be the first
             command line argument followed by the The type of calculation you wish to perform:
 
-                1: Linear approximations based on adjacent pairs
-                2: Global Linear Approximation
-                3: Piecewise Interpolation
-                4: Cubic Spline
+                1: Global Linear Approximation
+                2: Piecewise Interpolation
+                3: Cubic Spline
 
             This function sends the data from the input file to be proccessed ito a usable form
             then sends it off to its respective processing sector of this program.
@@ -66,53 +65,48 @@ class ProcessTemps:
 
 
         """
-
+        # 2D list of temps at times
         chart_of_temps = self.read_temps(file)
 
         if ctype is '1':
-            print("Calculating piecewise linear approximations...")
+            print("Calculating global linear approximation...")
             linear_approx = LinearApproximation()
-            linear_approx.approximate(chart_of_temps, 1)
+            linear_approx.approximate(chart_of_temps)
             print("Done.")
 
         elif ctype is '2':
-            print("Calculating global linear approximation...")
-            linear_approx = LinearApproximation()
-            linear_approx.approximate(chart_of_temps, 2)
+            print("Calculating piecewise interpolations...")
+            piecewise_interpolation = PiecewiseInterpolation()
+            piecewise_interpolation.interpolate(chart_of_temps)
             print("Done.")
 
         elif ctype is '3':
-            print("Calculating piecewise interpolations...")
-            piecewise_interpolation = PiecewiseInterpolation()
-            piecewise_interpolation.interpolate(chart_of_temps)
+            print("Calculating cubic splines...")
+            cubic_spline = CubicSpline()
+            cubic_spline.generate_spline(chart_of_temps)
             print("Done.")
 
         elif ctype is '4':
-            print("Calculating cubic splines...")
-            #
-            print("Done.")
-
-        elif ctype is '5':
             print("All calculations processing...")
             linear_approx = LinearApproximation()
             piecewise_interpolation = PiecewiseInterpolation()
-            print("Calculating piecewise linear approximations...")
-            linear_approx.approximate(chart_of_temps, 1)
+            cubic_spline = CubicSpline()
             print("Calculating global linear approximation...")
-            linear_approx.approximate(chart_of_temps, 2)
+            linear_approx.approximate(chart_of_temps)
             print("Calculating piecewise interpolations...")
             piecewise_interpolation.interpolate(chart_of_temps)
+            print("Calculating Cubic Spines...")
+            cubic_spline.generate_spline(chart_of_temps)
             print("Done.")
 
         else:
             print("ERROR: Please retry execution with valid arguments:")
             print("       'python3 processtemps.py testfilepath #' ")
             print("        where '#' is one of the following: ")
-            print("         1 -> Adjacent Pair Linear Approximations")
-            print("         2 -> Global Linear Approximation")
-            print("         3 -> Piecewise Interpolation")
-            print("         4 -> Cubic Spline")
-            print("         5 -> Perform All Of The Above")
+            print("         1 -> Global Linear Approximation")
+            print("         2 -> Piecewise Interpolation")
+            print("         3 -> Cubic Spline")
+            print("         4 -> Perform All Of The Above")
 
 
 if __name__ == "__main__":
