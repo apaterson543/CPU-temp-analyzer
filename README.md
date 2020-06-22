@@ -4,7 +4,7 @@ Generate linear approximation, piecewise interpolation, and cubic spline for eac
 # Requirements
   * Python 3.7
 
-#Input File Format
+# Input File Format
 
 >Column represents CPU core. Each line should represent a reading at increments of 30 seconds.
 
